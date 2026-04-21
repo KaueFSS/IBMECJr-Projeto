@@ -11,10 +11,10 @@ FORMAS_PAGAMENTO = [
 
 
 class Venda(models.Model):
+ 
 
     id_venda = models.CharField(
         max_length=10,
-        unique=True,
         verbose_name="ID da Venda"
     )
     data_venda = models.DateField(
@@ -28,7 +28,6 @@ class Venda(models.Model):
         choices=FORMAS_PAGAMENTO,
         verbose_name="Forma de Pagamento"
     )
-
     id_funcionario = models.CharField(
         max_length=10,
         verbose_name="ID do Funcionário"
@@ -39,25 +38,8 @@ class Venda(models.Model):
         blank=True,
         verbose_name="ID do Cliente"
     )
-
-    class Meta:
-        verbose_name = "Venda"
-        verbose_name_plural = "Vendas"
-        ordering = ['-data_venda', '-hora']
-
-    def __str__(self):
-        return f"Venda {self.id_venda} - {self.data_venda}"
-
-
-class ItemVenda(models.Model):
  
-    venda = models.ForeignKey(
-        Venda,
-        on_delete=models.CASCADE,
-        related_name='itens',
-        verbose_name="Venda"
-    )
-
+    # --- Item da venda ---
     id_produto = models.CharField(
         max_length=10,
         verbose_name="ID do Produto"
@@ -66,10 +48,10 @@ class ItemVenda(models.Model):
         max_length=200,
         verbose_name="Nome do Produto"
     )
-    quantidade_vendida = models.PositiveIntegerField(
-        verbose_name="Quantidade Vendida"
+    quantidade = models.IntegerField(
+        verbose_name="Quantidade"
     )
-    preco = models.DecimalField(
+    preco_unitario = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         verbose_name="Preço Unitário (R$)"
@@ -85,10 +67,11 @@ class ItemVenda(models.Model):
         decimal_places=2,
         verbose_name="Subtotal (R$)"
     )
-
+ 
     class Meta:
-        verbose_name = "Item da Venda"
-        verbose_name_plural = "Itens da Venda"
-
+        verbose_name = "Venda"
+        verbose_name_plural = "Vendas"
+        ordering = ['-data_venda', '-hora']
+ 
     def __str__(self):
-        return f"{self.nome_produto} (x{self.quantidade_vendida}) — Venda {self.venda.id_venda}"
+        return f"Venda {self.id_venda} — {self.nome_produto} (x{self.quantidade})"
