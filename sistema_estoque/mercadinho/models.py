@@ -73,6 +73,16 @@ class Fornecedor(models.Model):
         blank=True,
         verbose_name="Numero",
     )
+    comp = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Complemento",
+    )
+    bairro = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Bairro",
+    )
     representante = models.CharField(
         max_length=100,
         blank=True,
@@ -213,13 +223,6 @@ class Produto(models.Model):
         primary_key=True,
         verbose_name="ID do produto",
     )
-    fornecedor = models.ForeignKey(
-        Fornecedor,
-        on_delete=models.PROTECT,
-        related_name="produtos",
-        db_column="id_fornecedor",
-        verbose_name="Fornecedor",
-    )
     nome = models.CharField(
         max_length=150,
         verbose_name="Nome",
@@ -282,6 +285,12 @@ class Venda(models.Model):
         choices=FormaPagamento.choices,
         verbose_name="Forma de pagamento",
     )
+    produtos = models.ManyToManyField(
+        Produto,
+        through="ItemVenda",
+        related_name="vendas",
+        verbose_name="Produtos",
+    )
     funcionario = models.ForeignKey(
         Funcionario,
         on_delete=models.PROTECT,
@@ -291,9 +300,7 @@ class Venda(models.Model):
     )
     cliente = models.ForeignKey(
         Cliente,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        on_delete=models.PROTECT,
         related_name="vendas",
         db_column="id_cliente",
         verbose_name="Cliente",
@@ -351,6 +358,12 @@ class ItemVenda(models.Model):
         verbose_name = "Item da venda"
         verbose_name_plural = "Itens da venda"
         ordering = ["venda_id", "produto_id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["venda", "produto"],
+                name="unique_produto_por_venda",
+            )
+        ]
 
     def __str__(self):
         return f"{self.venda_id} - {self.produto.nome} x{self.quantidade_vendida}"
@@ -369,6 +382,19 @@ class CompraFornecedor(models.Model):
         related_name="compras",
         db_column="id_fornecedor",
         verbose_name="Fornecedor",
+    )
+    funcionario = models.ForeignKey(
+        Funcionario,
+        on_delete=models.PROTECT,
+        related_name="compras_registradas",
+        db_column="id_funcionario",
+        verbose_name="Funcionario responsavel",
+    )
+    produtos = models.ManyToManyField(
+        Produto,
+        through="ItemCompra",
+        related_name="compras_fornecedor",
+        verbose_name="Produtos",
     )
     data_compra = models.DateField(
         verbose_name="Data da compra",
@@ -446,6 +472,12 @@ class ItemCompra(models.Model):
         verbose_name = "Item da compra"
         verbose_name_plural = "Itens da compra"
         ordering = ["compra_id", "produto_id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["compra", "produto"],
+                name="unique_produto_por_compra",
+            )
+        ]
 
     def __str__(self):
         return f"{self.compra_id} - {self.produto.nome} x{self.quantidade}"
@@ -466,9 +498,7 @@ class Despesa(models.Model):
     )
     compra = models.ForeignKey(
         CompraFornecedor,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        on_delete=models.PROTECT,
         related_name="despesas",
         db_column="id_compra",
         verbose_name="Compra vinculada",
@@ -514,20 +544,20 @@ class Estoque(models.Model):
         validators=[MinValueValidator(0)],
         verbose_name="Quantidade atual",
     )
-    estoque_minimo = models.PositiveIntegerField(
+    quantidade_minima = models.PositiveIntegerField(
         validators=[MinValueValidator(0)],
         verbose_name="Estoque mínimo",
     )
-    estoque_maximo = models.PositiveIntegerField(
+    quantidade_maxima = models.PositiveIntegerField(
         validators=[MinValueValidator(0)],
         verbose_name="Estoque máximo",
     )
-    data_ultima_entrada = models.DateField(
+    dt_ultima_entrada = models.DateField(
         null=True,
         blank=True,
         verbose_name="Data da última entrada",
     )
-    data_ultima_saida = models.DateField(
+    dt_ultima_saida = models.DateField(
         null=True,
         blank=True,
         verbose_name="Data da última saída",
