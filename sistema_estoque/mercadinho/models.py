@@ -532,14 +532,7 @@ class Estoque(models.Model):
         blank=True,
         verbose_name="Data da última saída",
     )
-    local_armazenamento = models.CharField(
-        max_length=100,
-        verbose_name="Local de armazenamento",
-    )
-    status_estoque = models.CharField(
-        max_length=30,
-        verbose_name="Status do estoque",
-    )
+
 
     class Meta:
         verbose_name = "Estoque"
