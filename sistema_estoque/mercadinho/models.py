@@ -3,11 +3,46 @@ from django.db import models
 
 
 class FormaPagamento(models.TextChoices):
-    DINHEIRO = "dinheiro", "Dinheiro"
-    PIX = "pix", "Pix"
-    CARTAO_DEBITO = "cartao_debito", "Cartao debito"
-    CARTAO_CREDITO = "cartao_credito", "Cartao credito"
-    FIADO = "fiado", "Fiado"
+    DINHEIRO       = "dinheiro",       "Dinheiro"
+    PIX            = "pix",            "PIX"
+    CARTAO_DEBITO  = "cartao_debito",  "Cartão Débito"
+    CARTAO_CREDITO = "cartao_credito", "Cartão Crédito"
+    FIADO          = "fiado",          "Fiado"
+ 
+ 
+FORMAS_PAGAMENTO_ALIASES = {
+    
+    "dinheiro": FormaPagamento.DINHEIRO,
+    "Dinheiro": FormaPagamento.DINHEIRO,
+    "DINHEIRO": FormaPagamento.DINHEIRO,
+    "Especie":  FormaPagamento.DINHEIRO,
+    "Espécie":  FormaPagamento.DINHEIRO,
+ 
+    # PIX
+    "pix":  FormaPagamento.PIX,
+    "PIX":  FormaPagamento.PIX,
+    "PIX ": FormaPagamento.PIX,
+    "Pix":  FormaPagamento.PIX,
+ 
+    # Cartão Débito
+    "cartao_debito":  FormaPagamento.CARTAO_DEBITO,
+    "Cartao_Debito":  FormaPagamento.CARTAO_DEBITO,
+    "Cartão Débito":  FormaPagamento.CARTAO_DEBITO,
+    "cartao_debito":  FormaPagamento.CARTAO_DEBITO,
+ 
+    # Cartão Crédito
+    "cartao_credito":  FormaPagamento.CARTAO_CREDITO,
+    "Cartao_Credito":  FormaPagamento.CARTAO_CREDITO,
+    "Cartão Crédito":  FormaPagamento.CARTAO_CREDITO,
+    "Credito":         FormaPagamento.CARTAO_CREDITO,
+    "Crédito":         FormaPagamento.CARTAO_CREDITO,
+    "Credito":         FormaPagamento.CARTAO_CREDITO,
+ 
+    # Fiado
+    "fiado": FormaPagamento.FIADO,
+    "Fiado": FormaPagamento.FIADO,
+    "FIADO": FormaPagamento.FIADO,
+}
 
 
 class Fornecedor(models.Model):
