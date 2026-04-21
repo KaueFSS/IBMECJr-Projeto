@@ -8,36 +8,35 @@ class FormaPagamento(models.TextChoices):
     CARTAO_DEBITO  = "cartao_debito",  "Cartão Débito"
     CARTAO_CREDITO = "cartao_credito", "Cartão Crédito"
     FIADO          = "fiado",          "Fiado"
- 
- 
+
+
+# FIX 1: removidas chaves duplicadas e o "PIX " com espaço
 FORMAS_PAGAMENTO_ALIASES = {
-    
+
+    # Dinheiro
     "dinheiro": FormaPagamento.DINHEIRO,
     "Dinheiro": FormaPagamento.DINHEIRO,
     "DINHEIRO": FormaPagamento.DINHEIRO,
     "Especie":  FormaPagamento.DINHEIRO,
     "Espécie":  FormaPagamento.DINHEIRO,
- 
+
     # PIX
-    "pix":  FormaPagamento.PIX,
-    "PIX":  FormaPagamento.PIX,
-    "PIX ": FormaPagamento.PIX,
-    "Pix":  FormaPagamento.PIX,
- 
+    "pix": FormaPagamento.PIX,
+    "PIX": FormaPagamento.PIX,
+    "Pix": FormaPagamento.PIX,
+
     # Cartão Débito
-    "cartao_debito":  FormaPagamento.CARTAO_DEBITO,
-    "Cartao_Debito":  FormaPagamento.CARTAO_DEBITO,
-    "Cartão Débito":  FormaPagamento.CARTAO_DEBITO,
-    "cartao_debito":  FormaPagamento.CARTAO_DEBITO,
- 
+    "cartao_debito": FormaPagamento.CARTAO_DEBITO,
+    "Cartao_Debito": FormaPagamento.CARTAO_DEBITO,
+    "Cartão Débito": FormaPagamento.CARTAO_DEBITO,
+
     # Cartão Crédito
-    "cartao_credito":  FormaPagamento.CARTAO_CREDITO,
-    "Cartao_Credito":  FormaPagamento.CARTAO_CREDITO,
-    "Cartão Crédito":  FormaPagamento.CARTAO_CREDITO,
-    "Credito":         FormaPagamento.CARTAO_CREDITO,
-    "Crédito":         FormaPagamento.CARTAO_CREDITO,
-    "Credito":         FormaPagamento.CARTAO_CREDITO,
- 
+    "cartao_credito": FormaPagamento.CARTAO_CREDITO,
+    "Cartao_Credito": FormaPagamento.CARTAO_CREDITO,
+    "Cartão Crédito": FormaPagamento.CARTAO_CREDITO,
+    "Credito":        FormaPagamento.CARTAO_CREDITO,
+    "Crédito":        FormaPagamento.CARTAO_CREDITO,
+
     # Fiado
     "fiado": FormaPagamento.FIADO,
     "Fiado": FormaPagamento.FIADO,
@@ -357,6 +356,7 @@ class ItemVenda(models.Model):
         return f"{self.venda_id} - {self.produto.nome} x{self.quantidade_vendida}"
 
 
+# FIX 2: CompraFornecedor agora é o cabeçalho da nota fiscal (sem produto/quantidade diretamente)
 class CompraFornecedor(models.Model):
     id_compra = models.CharField(
         max_length=10,
@@ -370,13 +370,6 @@ class CompraFornecedor(models.Model):
         db_column="id_fornecedor",
         verbose_name="Fornecedor",
     )
-    produto = models.ForeignKey(
-        Produto,
-        on_delete=models.PROTECT,
-        related_name="compras_fornecedor",
-        db_column="id_produto",
-        verbose_name="Produto",
-    )
     data_compra = models.DateField(
         verbose_name="Data da compra",
     )
@@ -384,9 +377,6 @@ class CompraFornecedor(models.Model):
         max_length=10,
         blank=True,
         verbose_name="CFOP",
-    )
-    quantidade = models.PositiveIntegerField(
-        verbose_name="Quantidade",
     )
     status = models.CharField(
         max_length=30,
@@ -403,12 +393,6 @@ class CompraFornecedor(models.Model):
         blank=True,
         verbose_name="Nota fiscal",
     )
-    valor_unitario = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(0)],
-        verbose_name="Valor unitario",
-    )
     valor_total = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -423,6 +407,48 @@ class CompraFornecedor(models.Model):
 
     def __str__(self):
         return f"Compra {self.id_compra} - {self.fornecedor.razao_social}"
+
+
+# FIX 2 (cont.): novo modelo ItemCompra, análogo ao ItemVenda
+class ItemCompra(models.Model):
+    id_item_compra = models.AutoField(primary_key=True)
+    compra = models.ForeignKey(
+        CompraFornecedor,
+        on_delete=models.CASCADE,
+        related_name="itens",
+        db_column="id_compra",
+        verbose_name="Compra",
+    )
+    produto = models.ForeignKey(
+        Produto,
+        on_delete=models.PROTECT,
+        related_name="itens_compra",
+        db_column="id_produto",
+        verbose_name="Produto",
+    )
+    quantidade = models.PositiveIntegerField(
+        verbose_name="Quantidade",
+    )
+    valor_unitario = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        verbose_name="Valor unitario",
+    )
+    subtotal = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        verbose_name="Subtotal",
+    )
+
+    class Meta:
+        verbose_name = "Item da compra"
+        verbose_name_plural = "Itens da compra"
+        ordering = ["compra_id", "produto_id"]
+
+    def __str__(self):
+        return f"{self.compra_id} - {self.produto.nome} x{self.quantidade}"
 
 
 class Despesa(models.Model):
@@ -470,53 +496,46 @@ class Despesa(models.Model):
         return f"Despesa {self.id_despesa} - {self.categoria}"
 
 
+# FIX 3: OneToOneField garante um único registro de estoque por produto
 class Estoque(models.Model):
     id_estoque = models.CharField(
         max_length=10,
         primary_key=True,
         verbose_name="ID do estoque",
     )
-
-    produto = models.ForeignKey(
+    produto = models.OneToOneField(
         Produto,
         on_delete=models.PROTECT,
-        related_name="estoques",
+        related_name="estoque",
         db_column="id_produto",
         verbose_name="Produto",
     )
-
     quantidade_atual = models.PositiveIntegerField(
         validators=[MinValueValidator(0)],
         verbose_name="Quantidade atual",
     )
-
     estoque_minimo = models.PositiveIntegerField(
         validators=[MinValueValidator(0)],
         verbose_name="Estoque mínimo",
     )
-
     estoque_maximo = models.PositiveIntegerField(
         validators=[MinValueValidator(0)],
         verbose_name="Estoque máximo",
     )
-
     data_ultima_entrada = models.DateField(
         null=True,
         blank=True,
         verbose_name="Data da última entrada",
     )
-
     data_ultima_saida = models.DateField(
         null=True,
         blank=True,
         verbose_name="Data da última saída",
     )
-
     local_armazenamento = models.CharField(
         max_length=100,
         verbose_name="Local de armazenamento",
     )
-
     status_estoque = models.CharField(
         max_length=30,
         verbose_name="Status do estoque",
