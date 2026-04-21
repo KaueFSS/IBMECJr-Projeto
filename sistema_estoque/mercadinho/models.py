@@ -200,10 +200,6 @@ class Produto(models.Model):
         blank=True,
         verbose_name="Unidade",
     )
-    quantidade = models.PositiveIntegerField(
-        default=0,
-        verbose_name="Quantidade em estoque",
-    )
     ncm = models.CharField(
         max_length=20,
         blank=True,
