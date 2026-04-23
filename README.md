@@ -1,6 +1,6 @@
 # 🗄️ Comandos para Banco de Dados
 
-> Execute os comandos diretamente da pasta `sistema_estoque`
+
 
 ### 🔐 Credenciais
 
@@ -9,9 +9,11 @@
 | 👤 Username | `Usuario` |
 | 🔑 Senha | `12345` |
 
+> Execute os comandos diretamente da pasta `sistema_estoque` (cd sistema_estoque)
 ### ▶️ Iniciar Servidor
 
 ```bash
+cd sistema_estoque
 python manage.py runserver
 ```
 ### ▶️ Cria migração
