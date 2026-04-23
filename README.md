@@ -14,3 +14,11 @@
 ```bash
 python manage.py runserver
 ```
+### ▶️ Cria migração
+```bash
+python manage.py makemigrations
+```
+### ▶️ Migra para o brando de dados
+```bash
+python manage.py migrate
+```
