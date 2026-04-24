@@ -273,7 +273,7 @@ class Command(BaseCommand):
                     },
                 )
 
-        self.stdout.write("✓ Compras e itens de compra importados")
+        self.stdout.write("Compras e itens de compra importados")
 
         # ---------------- DESPESAS ----------------
         df_despesas = pd.read_excel("Mercadinho_Arrumado.xlsx", sheet_name="Despesas")

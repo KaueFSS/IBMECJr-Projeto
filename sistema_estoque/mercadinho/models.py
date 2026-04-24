@@ -56,6 +56,8 @@ class Fornecedor(models.Model):
     )
     nome_fantasia = models.CharField(
         max_length=150,
+        default="",
+        blank= True,
         verbose_name="Nome_Fantasia",
     )
     cnpj = models.CharField(
