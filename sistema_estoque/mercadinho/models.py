@@ -54,47 +54,18 @@ class Fornecedor(models.Model):
         max_length=150,
         verbose_name="Razao social",
     )
+    nome_fantasia = models.CharField(
+        max_length=150,
+        verbose_name="Nome_Fantasia",
+    )
     cnpj = models.CharField(
         max_length=18,
         unique=True,
         verbose_name="CNPJ",
     )
-    inscricao_est = models.CharField(
-        max_length=20,
-        blank=True,
-        verbose_name="Inscricao estadual",
-    )
     email = models.EmailField(
         blank=True,
         verbose_name="E-mail",
-    )
-    numero = models.CharField(
-        max_length=20,
-        blank=True,
-        verbose_name="Numero",
-    )
-    comp = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="Complemento",
-    )
-    bairro = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="Bairro",
-    )
-    representante = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="Representante",
-    )
-    rua = models.CharField(
-        max_length=150,
-        verbose_name="Rua",
-    )
-    cep = models.CharField(
-        max_length=9,
-        verbose_name="CEP",
     )
     cidade = models.CharField(
         max_length=100,
@@ -103,6 +74,23 @@ class Fornecedor(models.Model):
     uf = models.CharField(
         max_length=2,
         verbose_name="UF",
+    )
+    telefone = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name="Telefone",
+    )
+    prazo_de_entraga = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name="Prazo Entrega Dias",
+    )
+    avaliacao = models.DecimalField(
+    max_digits=10,
+    decimal_places=2,
+    default=0,                        
+    validators=[MinValueValidator(0)],
+    verbose_name="Avaliação",
     )
 
     class Meta:
@@ -138,6 +126,7 @@ class Funcionario(models.Model):
     salario = models.DecimalField(
         max_digits=10,
         decimal_places=2,
+        default= 0,
         validators=[MinValueValidator(0)],
         verbose_name="Salario",
     )
@@ -146,6 +135,10 @@ class Funcionario(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(0)],
         verbose_name="Horas semanais",
+    )
+    ativo = models.BooleanField(
+        verbose_name= "Ativo",
+        default= False,
     )
 
     class Meta:
@@ -185,10 +178,6 @@ class Cliente(models.Model):
     )
     data_cadastro = models.DateField(
         verbose_name="Data de cadastro",
-    )
-    qtd_comprada = models.PositiveIntegerField(
-        default=0,
-        verbose_name="Quantidade comprada",
     )
     total_valor = models.DecimalField(
         max_digits=12,
@@ -232,26 +221,33 @@ class Produto(models.Model):
         blank=True,
         verbose_name="Categoria",
     )
+    subcategoria = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Sub-Categoria",
+    )
+    marca = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Marca",
+    )
     unidade = models.CharField(
         max_length=20,
         blank=True,
         verbose_name="Unidade",
-    )
-    ncm = models.CharField(
-        max_length=20,
-        blank=True,
-        verbose_name="NCM",
-    )
-    cst = models.CharField(
-        max_length=10,
-        blank=True,
-        verbose_name="CST",
     )
     codigo_barras = models.CharField(
         max_length=50,
         blank=True,
         verbose_name="Codigo de barras",
     )
+    preco_custo = models.DecimalField(
+    max_digits=10,
+    decimal_places=2,
+    default=0,                        
+    validators=[MinValueValidator(0)],
+    verbose_name="Preco Custo",
+)
     preco = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -299,12 +295,14 @@ class Venda(models.Model):
         verbose_name="Funcionario",
     )
     cliente = models.ForeignKey(
-        Cliente,
-        on_delete=models.PROTECT,
-        related_name="vendas",
-        db_column="id_cliente",
-        verbose_name="Cliente",
-    )
+    Cliente,
+    on_delete=models.PROTECT,
+    null=True,       # ← adicionar
+    blank=True,      # ← adicionar
+    related_name="vendas",
+    db_column="id_cliente",
+    verbose_name="Cliente",
+)
 
     class Meta:
         verbose_name = "Venda"
@@ -399,11 +397,6 @@ class CompraFornecedor(models.Model):
     data_compra = models.DateField(
         verbose_name="Data da compra",
     )
-    cfop = models.CharField(
-        max_length=10,
-        blank=True,
-        verbose_name="CFOP",
-    )
     status = models.CharField(
         max_length=30,
         blank=True,
@@ -413,6 +406,10 @@ class CompraFornecedor(models.Model):
         null=True,
         blank=True,
         verbose_name="Data de entrega",
+    )
+    entregue = models.BooleanField(
+        verbose_name= "Entregue",
+        default= False,
     )
     nota_fiscal = models.CharField(
         max_length=50,
@@ -461,13 +458,6 @@ class ItemCompra(models.Model):
         validators=[MinValueValidator(0)],
         verbose_name="Valor unitario",
     )
-    subtotal = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(0)],
-        verbose_name="Subtotal",
-    )
-
     class Meta:
         verbose_name = "Item da compra"
         verbose_name_plural = "Itens da compra"
@@ -499,6 +489,8 @@ class Despesa(models.Model):
     compra = models.ForeignKey(
         CompraFornecedor,
         on_delete=models.PROTECT,
+        null=True,
+        blank=True,
         related_name="despesas",
         db_column="id_compra",
         verbose_name="Compra vinculada",
@@ -510,11 +502,20 @@ class Despesa(models.Model):
         max_length=100,
         verbose_name="Categoria",
     )
+    descricao = models.CharField(
+    max_length=100,
+    blank=True,
+    verbose_name="Descrição",
+)
     valor = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(0)],
         verbose_name="Valor",
+    )
+    recorrente = models.BooleanField(
+        verbose_name= "Recorrente",
+        default= False,
     )
 
     class Meta:
@@ -528,7 +529,7 @@ class Despesa(models.Model):
 
 # FIX 3: OneToOneField garante um único registro de estoque por produto
 class Estoque(models.Model):
-    id_estoque = models.CharField(
+    id_estoque = models.AutoField(
         max_length=10,
         primary_key=True,
         verbose_name="ID do estoque",
@@ -547,15 +548,6 @@ class Estoque(models.Model):
     quantidade_minima = models.PositiveIntegerField(
         validators=[MinValueValidator(0)],
         verbose_name="Estoque mínimo",
-    )
-    quantidade_maxima = models.PositiveIntegerField(
-        validators=[MinValueValidator(0)],
-        verbose_name="Estoque máximo",
-    )
-    dt_ultima_entrada = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name="Data da última entrada",
     )
     dt_ultima_saida = models.DateField(
         null=True,
