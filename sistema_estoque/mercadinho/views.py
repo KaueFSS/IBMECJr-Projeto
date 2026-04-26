@@ -20,13 +20,13 @@ class EstoqueViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='alerta-minimo')
     def alerta(self, request):
         estoques_alerta = Estoque.objects.filter(
-            quantidade_atual__lt = F("estoque_minimo")
+            quantidade_atual__lt = F("quantidade_minima")
         )
 
         serializer = self.get_serializer(estoques_alerta, many=True)
 
         return Response({
-            'total': itens_em_alerta.count(),
+            'total': estoques_alerta.count(),
             'resultados': serializer.data
         })
         
